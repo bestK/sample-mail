@@ -16,6 +16,7 @@ export interface Env {
     DB: D1Database;
     forward_address: string;
     email_domain: string;
+    ADMIN_PASSWORD?: string;
     GHPAGE?: string;
     UI_URL?: string;
     DEV?: boolean | string;
@@ -27,8 +28,8 @@ interface Ctx { }
 
 const CORS_HEADERS = {
     'access-control-allow-origin': '*',
-    'access-control-allow-methods': 'GET,OPTIONS',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-methods': 'GET,POST,OPTIONS',
+    'access-control-allow-headers': 'content-type,authorization,x-admin-auth',
 };
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -115,6 +116,56 @@ function resolvePostalMimeCtor(mod: any): any {
 }
 
 const PostalMimeCtor: any = resolvePostalMimeCtor(PostalMimeMod as any);
+
+
+// --- /admin & /api token utilities (compatible with cloudflare_temp_email provider) ---
+
+function base64UrlEncode(str: string): string {
+    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function base64UrlDecode(str: string): string {
+    let s = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    return atob(s);
+}
+
+async function signAddress(address: string, secret: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+        'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(address));
+    const addrB64 = base64UrlEncode(address);
+    const sigB64 = base64UrlEncode(String.fromCharCode(...new Uint8Array(sig)));
+    return `${addrB64}.${sigB64}`;
+}
+
+async function verifyToken(token: string, secret: string): Promise<string | null> {
+    const dot = token.indexOf('.');
+    if (dot === -1) return null;
+    try {
+        const addrB64 = token.substring(0, dot);
+        const sigB64 = token.substring(dot + 1);
+        const address = base64UrlDecode(addrB64);
+        const encoder = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+            'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+        );
+        const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(address));
+        const expectedSigB64 = base64UrlEncode(String.fromCharCode(...new Uint8Array(sig)));
+        return sigB64 === expectedSigB64 ? address : null;
+    } catch {
+        return null;
+    }
+}
+
+function getTokenSecret(env: Env): string {
+    const password = (env.ADMIN_PASSWORD || '').trim();
+    if (password) return password;
+    // fallback: derive secret from email_domain so tokens work without ADMIN_PASSWORD
+    return `sample-mail:${env.email_domain || 'default'}`;
+}
 
 
 // --- 简易路由系统 ---
@@ -216,6 +267,76 @@ register('GET', '/email/:address', async (request, env, ctx, params) => {
     } catch (e: any) {
         console.error("Error fetching from D1:", e);
         return jsonResponse({ success: false, error: 'Query error', details: e.message }, { status: 500 });
+    }
+});
+
+register('POST', '/admin/new_address', async (request, env, ctx, params) => {
+    try {
+        const adminPassword = (env.ADMIN_PASSWORD || '').trim();
+        if (adminPassword) {
+            const authHeader = request.headers.get('x-admin-auth');
+            if (authHeader !== adminPassword) {
+                return jsonResponse({ error: 'Unauthorized' }, { status: 401 });
+            }
+        }
+
+        const body: any = await request.json().catch(() => ({}));
+        const domains = normalizeEmailDomains(env.email_domain);
+        const requestedDomain = body?.domain || undefined;
+        const name: string | undefined = body?.name || undefined;
+
+        let randomPart: string | undefined;
+        if (name && body?.enablePrefix) {
+            randomPart = `${name}_${Math.random().toString(36).substring(2, 10)}`;
+        }
+
+        const address = createInboxAddress(domains, { requestedDomain, randomPart });
+        const secret = getTokenSecret(env);
+        const token = await signAddress(address, secret);
+
+        return jsonResponse({ address, jwt: token });
+    } catch (e: any) {
+        return jsonResponse({ error: e.message || 'Failed to create address' }, { status: 500 });
+    }
+});
+
+register('GET', '/api/mails', async (request, env, ctx, params) => {
+    try {
+        const url = new URL(request.url);
+        const limit = parseLimit(url.searchParams.get('limit'), 10, 1, 50);
+        const offset = Math.max(0, parseInt(url.searchParams.get('offset') || '0', 10) || 0);
+
+        // 解析 Bearer token（可选），未传则返回所有邮件
+        const authHeader = request.headers.get('Authorization');
+        const bearerMatch = authHeader?.match(/^Bearer\s+(.+)$/i);
+        let address: string | null = null;
+        if (bearerMatch) {
+            const secret = getTokenSecret(env);
+            address = await verifyToken(bearerMatch[1], secret);
+        }
+
+        let results: unknown;
+        let success = true;
+        if (address) {
+            const stmt = await env.DB
+                .prepare('SELECT "id", "subject", "from", "to", "forwarded_to", "html", "text", "createdAt" FROM Email WHERE lower("to") = lower(?) ORDER BY createdAt DESC LIMIT ? OFFSET ?')
+                .bind(address, limit, offset);
+            const r = await stmt.run();
+            results = r.results;
+            success = r.success;
+        } else {
+            const stmt = await env.DB
+                .prepare('SELECT "id", "subject", "from", "to", "forwarded_to", "html", "text", "createdAt" FROM Email ORDER BY createdAt DESC LIMIT ? OFFSET ?')
+                .bind(limit, offset);
+            const r = await stmt.run();
+            results = r.results;
+            success = r.success;
+        }
+
+        const data = (success && Array.isArray(results)) ? results : [];
+        return jsonResponse({ results: data });
+    } catch (e: any) {
+        return jsonResponse({ error: e.message || 'Failed to fetch mails' }, { status: 500 });
     }
 });
 
