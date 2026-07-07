@@ -8,7 +8,9 @@
     "type": "module",
     "scripts": {
         "dev": "wrangler dev --var DEV:true",
-        "deploy": "wrangler deploy"
+        "start": "wrangler dev",
+        "deploy": "wrangler deploy",
+        "test": "node --test"
     },
     "dependencies": {
         "mimetext": "^3.0.10",

@@ -19,6 +19,7 @@
                 --button: #111111;
                 --button-hover: #000000;
                 --danger: #b42318;
+                --success: #087443;
             }
 
             * {
@@ -40,7 +41,7 @@
             }
 
             .shell {
-                max-width: 880px;
+                max-width: 1020px;
                 margin: 0 auto;
                 padding: 34px 18px 48px;
             }
@@ -56,6 +57,14 @@
                 margin: 10px 0 0;
                 color: var(--ink-muted);
                 font-size: 0.95rem;
+            }
+
+            .topbar {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: flex-end;
+                justify-content: space-between;
+                gap: 14px;
             }
 
             .header {
@@ -77,6 +86,34 @@
                 transform: scale(1.1);
             }
 
+            .view-tabs {
+                display: inline-flex;
+                gap: 6px;
+                padding: 4px;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                background: #fff;
+            }
+
+            .tab-btn {
+                border: 0;
+                border-radius: 7px;
+                padding: 8px 11px;
+                background: transparent;
+                color: #555;
+                font-size: 0.86rem;
+            }
+
+            .tab-btn:hover {
+                transform: none;
+                background: #f5f5f5;
+            }
+
+            .tab-btn.active {
+                background: #111;
+                color: #fff;
+            }
+
             .panel {
                 margin-top: 20px;
                 background: var(--panel);
@@ -84,6 +121,10 @@
                 border-radius: 14px;
                 padding: 18px;
                 box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+            }
+
+            .view[hidden] {
+                display: none;
             }
 
             .grid {
@@ -117,6 +158,10 @@
                 margin-top: 10px;
             }
 
+            details.advanced .inner label:not(:first-child) {
+                margin-top: 10px;
+            }
+
             label {
                 display: block;
                 font-size: 0.86rem;
@@ -141,6 +186,19 @@
             input:focus {
                 border-color: var(--line-strong);
                 box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+            }
+
+            .field-row {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            @media (min-width: 720px) {
+                .field-row {
+                    grid-template-columns: 1fr auto;
+                    align-items: end;
+                }
             }
 
             .actions {
@@ -170,10 +228,26 @@
                 background: var(--button-hover);
             }
 
+            button:disabled {
+                cursor: not-allowed;
+                opacity: 0.58;
+                transform: none;
+            }
+
             button.secondary {
                 background: #fff;
                 color: #111;
                 border-color: var(--line-strong);
+            }
+
+            button.danger-btn {
+                background: #fff;
+                color: var(--danger);
+                border-color: #efc7c3;
+            }
+
+            button.danger-btn:hover {
+                background: #fff8f7;
             }
 
             .status {
@@ -190,6 +264,106 @@
             }
 
             .status.err {
+                color: var(--danger);
+                border-color: #efc7c3;
+                background: #fff8f7;
+            }
+
+            .status.ok {
+                color: var(--success);
+                border-color: #badfcc;
+                background: #f6fdf9;
+            }
+
+            .admin-tools {
+                display: grid;
+                gap: 16px;
+            }
+
+            .admin-tools[hidden] {
+                display: none;
+            }
+
+            .token-result {
+                display: none;
+                margin-top: 12px;
+                border: 1px solid #badfcc;
+                border-radius: 10px;
+                background: #f6fdf9;
+                padding: 10px;
+            }
+
+            .token-result.show {
+                display: block;
+            }
+
+            .token-value {
+                margin: 8px 0 0;
+                padding: 9px;
+                border: 1px solid #cfe8d9;
+                border-radius: 8px;
+                background: #fff;
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 0.82rem;
+                line-height: 1.45;
+                word-break: break-all;
+            }
+
+            .token-list {
+                display: grid;
+                gap: 10px;
+            }
+
+            .token-item {
+                display: grid;
+                gap: 10px;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                background: #fff;
+                padding: 12px;
+            }
+
+            @media (min-width: 760px) {
+                .token-item {
+                    grid-template-columns: minmax(0, 1fr) auto;
+                    align-items: center;
+                }
+            }
+
+            .token-name {
+                margin: 0;
+                font-weight: 700;
+                overflow-wrap: anywhere;
+            }
+
+            .token-meta {
+                margin: 5px 0 0;
+                color: var(--ink-muted);
+                font-size: 0.82rem;
+                line-height: 1.5;
+                overflow-wrap: anywhere;
+            }
+
+            .token-prefix {
+                font-family: 'IBM Plex Mono', monospace;
+                color: #333;
+            }
+
+            .pill {
+                display: inline-flex;
+                align-items: center;
+                width: max-content;
+                max-width: 100%;
+                margin-top: 7px;
+                padding: 3px 7px;
+                border-radius: 999px;
+                background: #f5f5f5;
+                border: 1px solid var(--line);
+                color: #555;
+                font-size: 0.74rem;
+            }
+
+            .pill.revoked {
                 color: var(--danger);
                 border-color: #efc7c3;
                 background: #fff8f7;
@@ -520,24 +694,32 @@
     </head>
     <body>
         <main class="shell">
-            <div class="header">
-                <h1>Sample Mail</h1>
-                <a
-                    href="https://github.com/bestK/sample-mail"
-                    target="_blank"
-                    class="github-link"
-                    aria-label="GitHub Repository"
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-                        />
-                    </svg>
-                </a>
+            <div class="topbar">
+                <div>
+                    <div class="header">
+                        <h1>Sample Mail</h1>
+                        <a
+                            href="https://github.com/bestK/sample-mail"
+                            target="_blank"
+                            class="github-link"
+                            aria-label="GitHub Repository"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                                />
+                            </svg>
+                        </a>
+                    </div>
+                    <p class="sub">Secure and effortless temporary email solution.</p>
+                </div>
+                <nav class="view-tabs" aria-label="Views">
+                    <button id="inboxTab" class="tab-btn active" type="button">Inbox</button>
+                    <button id="adminTab" class="tab-btn" type="button">Admin</button>
+                </nav>
             </div>
-            <p class="sub">Secure and effortless temporary email solution.</p>
 
-            <section class="panel">
+            <section id="inboxView" class="panel view">
                 <div>
                     <div>
                         <label for="address">Email Address</label>
@@ -548,6 +730,10 @@
                 <details class="advanced">
                     <summary>Advanced: API Base URL</summary>
                     <div class="inner">
+                        <label for="accessToken">Access Token</label>
+                        <input id="accessToken" type="password" autocomplete="off" placeholder="at_..." />
+
+                        <label for="apiBase">API Base URL</label>
                         <input id="apiBase" placeholder="https://your-api.example.com" />
                     </div>
                 </details>
@@ -580,27 +766,96 @@
                     <div id="sponsorList" class="sponsor-list"></div>
                 </section>
             </section>
+
+            <section id="adminView" class="panel view" hidden>
+                <div id="adminGate">
+                    <div class="field-row">
+                        <div>
+                            <label for="adminPassword">Admin Password</label>
+                            <input
+                                id="adminPassword"
+                                type="password"
+                                autocomplete="current-password"
+                                placeholder="PASSWORD"
+                            />
+                        </div>
+                        <button id="adminLoginBtn" type="button">Enter Admin</button>
+                    </div>
+                </div>
+
+                <div id="adminStatus" class="status">Password is required for token management.</div>
+
+                <div id="adminTools" class="admin-tools" hidden>
+                    <div>
+                        <div class="field-row">
+                            <div>
+                                <label for="tokenName">Token Name</label>
+                                <input id="tokenName" placeholder="Production client" />
+                            </div>
+                            <button id="createTokenBtn" type="button">Create Token</button>
+                        </div>
+
+                        <div id="tokenResult" class="token-result">
+                            <strong>New token</strong>
+                            <p id="newTokenValue" class="token-value"></p>
+                            <div class="actions">
+                                <button id="copyTokenBtn" class="secondary" type="button">Copy Token</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="actions">
+                            <button id="refreshTokensBtn" class="secondary" type="button">Refresh Tokens</button>
+                            <button id="adminLockBtn" class="secondary" type="button">Lock</button>
+                        </div>
+                        <div id="tokenList" class="token-list"></div>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <script>
             const els = {
+                inboxTab: document.getElementById('inboxTab'),
+                adminTab: document.getElementById('adminTab'),
+                inboxView: document.getElementById('inboxView'),
+                adminView: document.getElementById('adminView'),
                 apiBase: document.getElementById('apiBase'),
+                accessToken: document.getElementById('accessToken'),
                 address: document.getElementById('address'),
                 createBtn: document.getElementById('createBtn'),
                 fetchBtn: document.getElementById('fetchBtn'),
                 status: document.getElementById('status'),
                 emails: document.getElementById('emails'),
                 sponsorList: document.getElementById('sponsorList'),
+                adminGate: document.getElementById('adminGate'),
+                adminPassword: document.getElementById('adminPassword'),
+                adminLoginBtn: document.getElementById('adminLoginBtn'),
+                adminStatus: document.getElementById('adminStatus'),
+                adminTools: document.getElementById('adminTools'),
+                tokenName: document.getElementById('tokenName'),
+                createTokenBtn: document.getElementById('createTokenBtn'),
+                tokenResult: document.getElementById('tokenResult'),
+                newTokenValue: document.getElementById('newTokenValue'),
+                copyTokenBtn: document.getElementById('copyTokenBtn'),
+                refreshTokensBtn: document.getElementById('refreshTokensBtn'),
+                adminLockBtn: document.getElementById('adminLockBtn'),
+                tokenList: document.getElementById('tokenList'),
             };
 
             const POLL_INTERVAL_MS = 3000;
             let pollingTimer = null;
             let autoFetching = false;
             let lastRenderedSignature = null;
+            let adminPassword = '';
+            let lastNewToken = '';
 
             const defaultBase = window.location.origin;
             const savedBase = localStorage.getItem('apiBase') || defaultBase;
+            const savedAccessToken = localStorage.getItem('accessToken') || '';
             els.apiBase.value = savedBase;
+            els.accessToken.value = savedAccessToken;
 
             const savedAddress = localStorage.getItem('lastEmailAddress') || '';
             els.address.value = savedAddress;
@@ -609,9 +864,18 @@
                 return raw.trim().replace(/\/$/, '');
             }
 
+            function setStatusElement(el, text, state) {
+                el.textContent = text;
+                el.classList.toggle('err', state === 'err');
+                el.classList.toggle('ok', state === 'ok');
+            }
+
             function setStatus(text, isError) {
-                els.status.textContent = text;
-                els.status.classList.toggle('err', Boolean(isError));
+                setStatusElement(els.status, text, isError ? 'err' : '');
+            }
+
+            function setAdminStatus(text, state) {
+                setStatusElement(els.adminStatus, text, state || '');
             }
 
             function setBusy(busy) {
@@ -619,10 +883,22 @@
                 els.fetchBtn.disabled = busy;
             }
 
+            function setAdminBusy(busy) {
+                els.adminLoginBtn.disabled = busy;
+                els.createTokenBtn.disabled = busy;
+                els.refreshTokensBtn.disabled = busy;
+            }
+
             function getBase() {
                 const base = normalizeBase(els.apiBase.value || defaultBase);
                 localStorage.setItem('apiBase', base);
                 return base;
+            }
+
+            function getAccessToken() {
+                const token = els.accessToken.value.trim();
+                localStorage.setItem('accessToken', token);
+                return token;
             }
 
             function getClientTimeZone() {
@@ -640,9 +916,35 @@
                 return path + separator + 'timezone=' + encodeURIComponent(timeZone);
             }
 
-            async function apiGet(path) {
+            async function apiRequest(path, options) {
+                const opts = options || {};
                 const base = getBase();
-                const res = await fetch(base + path, { method: 'GET' });
+                const headers = {};
+
+                if (opts.body !== undefined) {
+                    headers['content-type'] = 'application/json';
+                }
+
+                if (opts.auth) {
+                    const token = getAccessToken();
+                    if (!token) {
+                        throw new Error('Access token is required. Create one in Admin and paste it here.');
+                    }
+                    headers.authorization = 'Bearer ' + token;
+                }
+
+                if (opts.admin) {
+                    if (!adminPassword) {
+                        throw new Error('Admin password is required.');
+                    }
+                    headers['x-admin-password'] = adminPassword;
+                }
+
+                const res = await fetch(base + path, {
+                    method: opts.method || 'GET',
+                    headers,
+                    body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+                });
                 let body = null;
                 try {
                     body = await res.json();
@@ -656,6 +958,18 @@
                 }
 
                 return body;
+            }
+
+            async function apiGet(path, options) {
+                return apiRequest(path, { ...(options || {}), method: 'GET' });
+            }
+
+            function showView(view) {
+                const isAdmin = view === 'admin';
+                els.inboxView.hidden = isAdmin;
+                els.adminView.hidden = !isAdmin;
+                els.inboxTab.classList.toggle('active', !isAdmin);
+                els.adminTab.classList.toggle('active', isAdmin);
             }
 
             function clearEmails() {
@@ -919,7 +1233,7 @@
                 try {
                     setBusy(true);
                     setStatus('Creating a new inbox...', false);
-                    const body = await apiGet('/email/create');
+                    const body = await apiGet('/email/create', { auth: true });
                     const addr = body && body.data ? body.data.address : '';
                     if (!addr) throw new Error('No address returned by API.');
                     els.address.value = addr;
@@ -941,7 +1255,9 @@
 
                     setBusy(true);
                     setStatus('Checking for new mail...', false);
-                    const body = await apiGet(withClientTimeZone('/email/' + encodeURIComponent(addr) + '?limit=10'));
+                    const body = await apiGet(withClientTimeZone('/email/' + encodeURIComponent(addr) + '?limit=10'), {
+                        auth: true,
+                    });
                     renderEmails(body.data || []);
                 } catch (err) {
                     clearEmails();
@@ -962,6 +1278,7 @@
                         autoFetching = true;
                         const body = await apiGet(
                             withClientTimeZone('/email/' + encodeURIComponent(addr) + '?limit=10'),
+                            { auth: true },
                         );
                         const items = body.data || [];
                         const nextSignature = buildSignature(items);
@@ -976,12 +1293,194 @@
                 }, POLL_INTERVAL_MS);
             }
 
+            function renderTokens(tokens) {
+                els.tokenList.innerHTML = '';
+
+                if (!Array.isArray(tokens) || tokens.length === 0) {
+                    const empty = document.createElement('p');
+                    empty.className = 'sponsor-empty';
+                    empty.textContent = 'No access tokens yet.';
+                    els.tokenList.appendChild(empty);
+                    return;
+                }
+
+                const frag = document.createDocumentFragment();
+                for (const token of tokens) {
+                    const item = document.createElement('article');
+                    item.className = 'token-item';
+
+                    const detail = document.createElement('div');
+
+                    const name = document.createElement('p');
+                    name.className = 'token-name';
+                    name.textContent = token.name || 'Access token';
+
+                    const meta = document.createElement('p');
+                    meta.className = 'token-meta';
+                    meta.appendChild(document.createTextNode('Prefix '));
+                    const prefix = document.createElement('span');
+                    prefix.className = 'token-prefix';
+                    prefix.textContent = token.prefix || '-';
+                    meta.appendChild(prefix);
+                    meta.appendChild(document.createTextNode(' | Created ' + (token.createdAt || '-')));
+                    meta.appendChild(document.createTextNode(' | Last used ' + (token.lastUsedAt || '-')));
+
+                    const state = document.createElement('span');
+                    state.className = 'pill' + (token.revokedAt ? ' revoked' : '');
+                    state.textContent = token.revokedAt ? 'Revoked' : 'Active';
+
+                    detail.appendChild(name);
+                    detail.appendChild(meta);
+                    detail.appendChild(state);
+                    item.appendChild(detail);
+
+                    if (!token.revokedAt) {
+                        const revokeBtn = document.createElement('button');
+                        revokeBtn.className = 'danger-btn';
+                        revokeBtn.type = 'button';
+                        revokeBtn.textContent = 'Revoke';
+                        revokeBtn.addEventListener('click', () => revokeToken(token.id));
+                        item.appendChild(revokeBtn);
+                    }
+
+                    frag.appendChild(item);
+                }
+
+                els.tokenList.appendChild(frag);
+            }
+
+            async function unlockAdmin() {
+                try {
+                    const password = els.adminPassword.value;
+                    if (!password) throw new Error('Please enter admin password.');
+
+                    setAdminBusy(true);
+                    setAdminStatus('Checking password...', '');
+                    await apiRequest('/admin/login', {
+                        method: 'POST',
+                        body: { password },
+                    });
+
+                    adminPassword = password;
+                    els.adminGate.hidden = true;
+                    els.adminTools.hidden = false;
+                    setAdminStatus('Admin unlocked.', 'ok');
+                    await loadTokens();
+                } catch (err) {
+                    adminPassword = '';
+                    setAdminStatus(err.message || String(err), 'err');
+                } finally {
+                    setAdminBusy(false);
+                }
+            }
+
+            function lockAdmin() {
+                adminPassword = '';
+                lastNewToken = '';
+                els.adminPassword.value = '';
+                els.adminGate.hidden = false;
+                els.adminTools.hidden = true;
+                els.tokenResult.classList.remove('show');
+                els.tokenList.innerHTML = '';
+                setAdminStatus('Password is required for token management.', '');
+            }
+
+            async function loadTokens() {
+                try {
+                    setAdminBusy(true);
+                    const body = await apiGet('/admin/tokens', { admin: true });
+                    renderTokens(body.data || []);
+                    setAdminStatus('Token list loaded.', 'ok');
+                } catch (err) {
+                    setAdminStatus(err.message || String(err), 'err');
+                } finally {
+                    setAdminBusy(false);
+                }
+            }
+
+            async function createToken() {
+                try {
+                    setAdminBusy(true);
+                    setAdminStatus('Creating token...', '');
+                    const body = await apiRequest('/admin/tokens', {
+                        method: 'POST',
+                        admin: true,
+                        body: {
+                            name: els.tokenName.value.trim(),
+                        },
+                    });
+
+                    const data = body.data || {};
+                    lastNewToken = data.token || '';
+                    if (!lastNewToken) throw new Error('No token returned by API.');
+
+                    els.newTokenValue.textContent = lastNewToken;
+                    els.tokenResult.classList.add('show');
+                    els.accessToken.value = lastNewToken;
+                    localStorage.setItem('accessToken', lastNewToken);
+                    await loadTokens();
+                    setAdminStatus('Token created. The full value is shown once.', 'ok');
+                } catch (err) {
+                    setAdminStatus(err.message || String(err), 'err');
+                } finally {
+                    setAdminBusy(false);
+                }
+            }
+
+            async function revokeToken(id) {
+                try {
+                    setAdminBusy(true);
+                    setAdminStatus('Revoking token...', '');
+                    await apiRequest('/admin/tokens/' + encodeURIComponent(id), {
+                        method: 'DELETE',
+                        admin: true,
+                    });
+                    await loadTokens();
+                    setAdminStatus('Token revoked.', 'ok');
+                } catch (err) {
+                    setAdminStatus(err.message || String(err), 'err');
+                } finally {
+                    setAdminBusy(false);
+                }
+            }
+
+            async function copyNewToken() {
+                if (!lastNewToken) return;
+
+                try {
+                    await navigator.clipboard.writeText(lastNewToken);
+                    els.copyTokenBtn.textContent = 'Copied';
+                } catch (_) {
+                    els.copyTokenBtn.textContent = 'Copy Failed';
+                }
+
+                setTimeout(() => {
+                    els.copyTokenBtn.textContent = 'Copy Token';
+                }, 1200);
+            }
+
+            els.inboxTab.addEventListener('click', () => showView('inbox'));
+            els.adminTab.addEventListener('click', () => showView('admin'));
             els.createBtn.addEventListener('click', onCreateAddress);
             els.fetchBtn.addEventListener('click', onFetchEmails);
+            els.accessToken.addEventListener('change', getAccessToken);
             els.apiBase.addEventListener('change', loadSponsorInfo);
+            els.adminLoginBtn.addEventListener('click', unlockAdmin);
+            els.adminPassword.addEventListener('keydown', event => {
+                if (event.key === 'Enter') unlockAdmin();
+            });
+            els.createTokenBtn.addEventListener('click', createToken);
+            els.refreshTokensBtn.addEventListener('click', loadTokens);
+            els.adminLockBtn.addEventListener('click', lockAdmin);
+            els.copyTokenBtn.addEventListener('click', copyNewToken);
             els.address.addEventListener('input', () => {
                 localStorage.setItem('lastEmailAddress', els.address.value.trim());
             });
+
+            if (window.location.pathname.replace(/\/$/, '').endsWith('/admin')) {
+                showView('admin');
+            }
+
             startAutoPolling();
             loadSponsorInfo();
         </script>

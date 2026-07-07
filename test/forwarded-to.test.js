@@ -6,9 +6,6 @@ import {
   resolveForwardedTo,
 } from '../src/forwarded-to.js';
 
-// --- helpers ---
-
-/** Build a base64url-encoded JSON payload like DuckDuckGo embeds in HTML. */
 function makeDuckUrl(address) {
   const json = JSON.stringify({ address });
   const b64 = btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -18,8 +15,6 @@ function makeDuckUrl(address) {
 function wrapHtml(url) {
   return `<html><body><p>Manage: <a href="${url}">${url}</a></p></body></html>`;
 }
-
-// --- extractDuckDuckGoAlias ---
 
 test('extractDuckDuckGoAlias returns alias from valid DuckDuckGo URL with @', () => {
   const html = wrapHtml(makeDuckUrl('my_alias@duck.com'));
@@ -59,16 +54,22 @@ test('extractDuckDuckGoAlias returns null when address is empty string', () => {
   assert.equal(extractDuckDuckGoAlias(html), null);
 });
 
-// --- resolveForwardedTo ---
+test('resolveForwardedTo prefers Delivered-To over X-Forwarded-To for Gmail relay', () => {
+  const headers = [
+    { key: 'X-Forwarded-To', value: 'gmailrelay01@linkof.link' },
+    { key: 'Delivered-To', value: 'novenarudolf+oai_test@gmail.com' },
+    { key: 'To', value: 'novenarudolf+oai_test@gmail.com' },
+  ];
+  assert.equal(resolveForwardedTo(headers, ''), 'novenarudolf+oai_test@gmail.com');
+});
 
-test('resolveForwardedTo prefers X-Forwarded-To header', () => {
-  const headers = [{ key: 'X-Forwarded-To', value: 'header@example.com' }];
-  const html = wrapHtml(makeDuckUrl('duck@duck.com'));
-  assert.equal(resolveForwardedTo(headers, html), 'header@example.com');
+test('resolveForwardedTo reads Delivered-To as fallback', () => {
+  const headers = [{ key: 'Delivered-To', value: '<base+oai_cd34@gmail.com>' }];
+  assert.equal(resolveForwardedTo(headers, ''), 'base+oai_cd34@gmail.com');
 });
 
 test('resolveForwardedTo is case-insensitive on header key', () => {
-  const headers = [{ key: 'x-forwarded-to', value: 'lower@example.com' }];
+  const headers = [{ key: 'delivered-to', value: 'lower@example.com' }];
   assert.equal(resolveForwardedTo(headers, null), 'lower@example.com');
 });
 

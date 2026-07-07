@@ -7,6 +7,8 @@ Cloudflare Email Worker + D1 + GitHub Pages frontend.
 ## Features
 
 - Generate random inbox addresses via `/email/create`
+- Protect inbox create/read APIs with access tokens
+- Manage access tokens in the password-gated Admin UI
 - Receive emails through Cloudflare Email Routing and store them in D1
 - Read inbox messages via `/email/:address?limit=10`
 - Expose sponsor channel config via `/sponsor/info`
@@ -46,6 +48,7 @@ forward_address = "a@example.com;b@example.com"
 GHPAGE = "https://<your-github-username>.github.io/sample-mail/"
 SPONSOR_CURRENCY = "SOL"
 SPONSOR_RECEIVE_HASH = "<wallet_or_receive_hash>"
+PASSWORD = "<admin_password>"
 ```
 
 4. Deploy worker
@@ -75,6 +78,12 @@ Tip: use the exact record values from the Cloudflare Email Routing page, then te
 
 ## API
 
+Inbox APIs require an access token created in the Admin UI. Send it as a bearer token:
+
+```http
+Authorization: Bearer at_xxx
+```
+
 Create inbox:
 
 ```http
@@ -98,6 +107,39 @@ Get messages:
 
 ```http
 GET /email/{address}?limit=10
+```
+
+Admin login:
+
+```http
+POST /admin/login
+Content-Type: application/json
+
+{"password":"<admin_password>"}
+```
+
+List access tokens:
+
+```http
+GET /admin/tokens
+X-Admin-Password: <admin_password>
+```
+
+Create access token:
+
+```http
+POST /admin/tokens
+Content-Type: application/json
+X-Admin-Password: <admin_password>
+
+{"name":"Production client"}
+```
+
+Revoke access token:
+
+```http
+DELETE /admin/tokens/{id}
+X-Admin-Password: <admin_password>
 ```
 
 Get sponsor info:
@@ -127,9 +169,11 @@ Response example:
 
 - Frontend source is `assets/index.html`
 - Workflow deploys `assets/` to `gh-pages` automatically
-- Worker reads `GHPAGE` and returns that UI from `/` and `/ui`
+- Worker reads `GHPAGE` and returns that UI from `/`, `/ui`, and `/admin`
+- Use the Admin view with `PASSWORD` to create access tokens. Paste an access token into the Inbox advanced settings before creating or reading inboxes.
 
 ## Notes
 
 - If `email_domain` is missing, `/email/create` returns a config error
 - `forward_address` can be empty; use `;` to separate multiple emails
+- If `PASSWORD` is missing, admin token management returns a config error
