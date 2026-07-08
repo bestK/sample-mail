@@ -845,7 +845,12 @@
             };
 
             const POLL_INTERVAL_MS = 3000;
+            const AWAY_TIMEOUT_MS = 5 * 60 * 1000;
+            const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
             let pollingTimer = null;
+            let awayTimer = null;
+            let pausedByAway = false;
+            let lastActivityReset = 0;
             let autoFetching = false;
             let lastRenderedSignature = null;
             let adminPassword = '';
@@ -1293,6 +1298,66 @@
                 }, POLL_INTERVAL_MS);
             }
 
+            function stopAutoPolling() {
+                if (!pollingTimer) return;
+                clearInterval(pollingTimer);
+                pollingTimer = null;
+            }
+
+            function clearAwayTimer() {
+                if (!awayTimer) return;
+                clearTimeout(awayTimer);
+                awayTimer = null;
+            }
+
+            function resumeFromAway() {
+                pausedByAway = false;
+                window.alert('Auto-refresh was paused after 5 minutes of inactivity. Click OK to resume checking for new mail.');
+                startAutoPolling();
+            }
+
+            // (Re)arm the idle countdown. Fires when the user has neither interacted
+            // with nor viewed the page for AWAY_TIMEOUT_MS.
+            function armAwayCountdown() {
+                clearAwayTimer();
+                awayTimer = setTimeout(() => {
+                    awayTimer = null;
+                    stopAutoPolling();
+                    pausedByAway = true;
+                }, AWAY_TIMEOUT_MS);
+            }
+
+            // Called on any real user activity (throttled to once per second).
+            function onUserActivity() {
+                const now = Date.now();
+                if (now - lastActivityReset < 1000) return;
+                lastActivityReset = now;
+
+                if (pausedByAway) {
+                    resumeFromAway();
+                    return;
+                }
+                // Only keep a countdown running while the page is visible; a hidden
+                // page can't receive activity, so its countdown is left to expire.
+                if (!document.hidden) armAwayCountdown();
+            }
+
+            function handleVisibilityChange() {
+                if (document.hidden) {
+                    // Page left in the background: run the idle countdown to completion.
+                    armAwayCountdown();
+                    return;
+                }
+
+                // Page visible again: treat as activity.
+                clearAwayTimer();
+                if (pausedByAway) {
+                    resumeFromAway();
+                } else {
+                    armAwayCountdown();
+                }
+            }
+
             function renderTokens(tokens) {
                 els.tokenList.innerHTML = '';
 
@@ -1481,7 +1546,13 @@
                 showView('admin');
             }
 
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            for (const evt of ACTIVITY_EVENTS) {
+                window.addEventListener(evt, onUserActivity, { passive: true });
+            }
+
             startAutoPolling();
+            armAwayCountdown();
             loadSponsorInfo();
         </script>
     </body>
