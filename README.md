@@ -49,6 +49,9 @@ GHPAGE = "https://<your-github-username>.github.io/sample-mail/"
 SPONSOR_CURRENCY = "SOL"
 SPONSOR_RECEIVE_HASH = "<wallet_or_receive_hash>"
 PASSWORD = "<admin_password>"
+# Optional: Cloudflare Temp Email compatible address JWT secret.
+# Defaults to PASSWORD when omitted.
+JWT_SECRET = "<address_jwt_secret>"
 ```
 
 4. Deploy worker
@@ -140,6 +143,31 @@ Revoke access token:
 ```http
 DELETE /admin/tokens/{id}
 X-Admin-Password: <admin_password>
+```
+
+Cloudflare Temp Email compatible admin auth may use either header:
+
+```http
+X-Admin-Password: <admin_password>
+X-Admin-Auth: <admin_password>
+```
+
+Compatible address and mail APIs:
+
+```http
+POST /admin/new_address
+X-Admin-Auth: <admin_password>
+
+{"name":"demo","domain":"example.com"}
+```
+
+Returns `{ "address": "...", "jwt": "...", "address_id": 1 }`. The `jwt` can be used with `Authorization: Bearer <jwt>` on `GET /api/mails?limit=10&offset=0`.
+
+Admin mail listing is also available:
+
+```http
+GET /admin/mails?address=demo@example.com&limit=20&offset=0
+X-Admin-Auth: <admin_password>
 ```
 
 Get sponsor info:

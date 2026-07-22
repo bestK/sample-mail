@@ -44,3 +44,17 @@ CREATE TABLE AccessToken (
 
 
 CREATE INDEX idx_access_token_hash ON AccessToken(token_hash);
+
+
+DROP TABLE IF EXISTS Address;
+
+
+CREATE TABLE Address (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE INDEX idx_address_name ON Address(name);
